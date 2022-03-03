@@ -1,8 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-internal class RomanNumberException : Exception
+public class RomanNumberException : Exception
 {
-    public RomanNumberException(string message) : base(message) { }
+	public RomanNumberException(string txt) : base(txt) { }
+	public override string ToString()
+	{
+		string res = Message;
+		return res;
+	}
 }

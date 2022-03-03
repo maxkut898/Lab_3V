@@ -1,117 +1,129 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 public class RomanNumber : ICloneable, IComparable
 {
-    private string Roman_Number = "";
-    private ushort Decimal_Number;
-    //Конструктор получает число n, которое должен представлять объект класса
-    public RomanNumber(ushort n)
-    {
-        Decimal_Number = n;
+	static char[] Roman_Value = { 'I', 'V', 'X', 'L', 'C', 'D', 'M' };
+	string Roman;
 
-    }
-    //Сложение римских чисел
-    public static RomanNumber Add(RomanNumber? n1, RomanNumber? n2)
-    {
-        if (n1 == null || n2 == null)
-        {
-            throw new RomanNumberException("Некорректно введены входные данные!!");
-        }
-        return new RomanNumber((ushort)(n1.Decimal_Number + n2.Decimal_Number));
-    }
-    //Вычитание римских чисел
-    public static RomanNumber Sub(RomanNumber? n1, RomanNumber? n2)
-    {
-        if (n1 == null || n2 == null || n1.Decimal_Number - n2.Decimal_Number <= 0)
-        {
-            throw new RomanNumberException("Некорректно введены входные данные!!");
-        }
+	static string Digit_10_to_Roman(int n, int pos)
+	{
+		string res = "";
+		if (n >= 5 && n < 9) res += Roman_Value[pos + 1];
+		if (n % 5 <= 3) res += new string(Roman_Value[pos], n % 5);
+		else if (n % 5 == 4)
+		{
+			res += Roman_Value[pos];
+			res += Roman_Value[pos + (n + 1) / 5];
+		}
+		return res;
+	}
 
-        return new RomanNumber((ushort)(n1.Decimal_Number - n2.Decimal_Number));
-    }
-    //Умножение римских чисел
-    public static RomanNumber Mul(RomanNumber? n1, RomanNumber? n2)
-    {
-        if (n1 == null || n2 == null)
-        {
-            throw new RomanNumberException("Некорректно введены входные данные!!");
-        }
-        return new RomanNumber((ushort)(n1.Decimal_Number * n2.Decimal_Number));
-    }
-    //Целочисленное деление римских чисел
-    public static RomanNumber Div(RomanNumber? n1, RomanNumber? n2)
-    {
-        if (n1 == null || n2 == null || n1.Decimal_Number / n2.Decimal_Number <= 0)
-        {
-            throw new RomanNumberException("Некорректно введены входные данные!!");
-        }
+	static ushort Digit_Roman_to_10(char Z)
+	{
+		if (Z == Roman_Value[0]) return 1;
+		if (Z == Roman_Value[1]) return 5;
+		if (Z == Roman_Value[2]) return 10;
+		if (Z == Roman_Value[3]) return 50;
+		if (Z == Roman_Value[4]) return 100;
+		if (Z == Roman_Value[5]) return 500;
+		if (Z == Roman_Value[6]) return 1000;
+		return 0;
+	}
 
-        return new RomanNumber((ushort)(n1.Decimal_Number / n2.Decimal_Number));
-    }
-    //Возвращает строковое представление римского числа
-    public override string ToString()
-    {
-        if (Roman_Number == "")
-        {
-            ushort n = Decimal_Number;
-            if (n <= 0 || n >= 4000)
-            {
-                throw new RomanNumberException("Некорректно введено десятичное число!!");
-            }
+	static ushort Roman_to_10(RomanNumber? n1)
+	{
+		ushort res = 0;
+		int i = 0;
+		for (; i < n1.Roman.Length - 1; i++)
+		{
+			if (Digit_Roman_to_10(n1.Roman[i]) < Digit_Roman_to_10(n1.Roman[i + 1]))
+			{
+				res += (ushort)(Digit_Roman_to_10(n1.Roman[i + 1]) - Digit_Roman_to_10(n1.Roman[i]));
+				i++;
+			}
+			else res += Digit_Roman_to_10(n1.Roman[i]);
+		}
+		if (i != n1.Roman.Length) res += Digit_Roman_to_10(n1.Roman[i]);
+		return res;
+	}
 
-            string[] romanSymbols = new string[] { "M", "D", "C", "L", "X", "V", "I" };
+	public RomanNumber(ushort n)
+	{
+		if (n <= 0 || n >= 4000)
+		{
+			throw new RomanNumberException("На вход было подано некорректное число для перевода\n в римскую систему счисления (от 1 до 3999)");
+		}
+		Roman = "";
+		int deg = 1000;
+		for (int i = 0; i < 4; i++)
+		{
+			Roman += Digit_10_to_Roman((n % (deg * 10)) / deg, 6 - 2 * i);
+			deg /= 10;
+		}
+	}
 
-            //численное текущего значение римского символа
-            ushort romanSymbolValue = 1000;
+	public static RomanNumber operator +(RomanNumber? n1, RomanNumber? n2)
+	{
+		if (n1 == null || n2 == null)
+		{
+			throw new RomanNumberException("Одно из слагаемых суммы римских чисел неопределенно");
+		}
+		ushort d1 = Roman_to_10(n1);
+		ushort d2 = Roman_to_10(n2);
+		if (d1 + d2 >= 4000) throw new RomanNumberException("Полученная сумма превышает диапозон допустимых значений " + (d1 + d2));
+		return new RomanNumber((ushort)(d1 + d2));
+	}
 
-            for (int i = 0; i < romanSymbols.Length; i += 2)
-            {
-                //берём старшую цифру числа
-                int digit = n / romanSymbolValue;
+	public static RomanNumber operator -(RomanNumber? n1, RomanNumber? n2)
+	{
+		if (n1 == null || n2 == null)
+		{
+			throw new RomanNumberException("Одно из чисел разности римских чисел неопределенно");
+		}
+		ushort d1 = Roman_to_10(n1);
+		ushort d2 = Roman_to_10(n2);
+		if (d1 - d2 <= 0) throw new RomanNumberException("Вычитаемое в разности целых чисел больше или равно уменьшаемого");
+		return new RomanNumber((ushort)(d1 - d2));
+	}
 
-                if (digit == 9)
-                {
-                    Roman_Number += romanSymbols[i] + romanSymbols[i - 2];
-                    digit = 0;
-                }
-                if (digit >= 5)
-                {
-                    Roman_Number += romanSymbols[i - 1];
-                    digit -= 5;
-                }
-                if (digit == 4)
-                {
-                    Roman_Number += romanSymbols[i] + romanSymbols[i - 1];
-                    digit = 0;
-                }
-                for (int j = 0; j < digit; j++)
-                {
-                    Roman_Number += romanSymbols[i];
-                }
+	public static RomanNumber operator *(RomanNumber? n1, RomanNumber? n2)
+	{
+		if (n1 == null || n2 == null)
+		{
+			throw new RomanNumberException("Один из множителей произведения римских чисел неопределенно");
+		}
+		ushort d1 = Roman_to_10(n1);
+		ushort d2 = Roman_to_10(n2);
+		if (d1 * d2 >= 4000) throw new RomanNumberException("Полученное произведение превышает диапозон допустимых значений " + (d1 * d2));
+		return new RomanNumber((ushort)(d1 * d2));
+	}
 
-                //обрубаем старшую цифру числа
-                n %= romanSymbolValue;
+	public static RomanNumber operator /(RomanNumber? n1, RomanNumber? n2)
+	{
+		if (n1 == null || n2 == null)
+		{
+			throw new RomanNumberException("Одно из чисел частного римских чисел неопределенно");
+		}
+		ushort d1 = Roman_to_10(n1);
+		ushort d2 = Roman_to_10(n2);
+		if (d1 / d2 == 0) throw new RomanNumberException("Делитель частного римских чисел меньше делимого ");
+		if (d1 % d2 > 0) throw new RomanNumberException("Делимое не кратно делимому, а дробных чисел в римской системе счисления нет");
+		return new RomanNumber((ushort)(d1 / d2));
+	}
 
-                //уменьшаем численное значение символа в 10 раз
-                romanSymbolValue /= 10;
-            }
-        }
-        return Roman_Number;
-    }
+	public object Clone()
+	{
+		return new RomanNumber(Roman_to_10(this));
+	}
 
-    public object Clone()
-    {
-        return new RomanNumber(Decimal_Number);
-    }
+	public int CompareTo(object? obj)
+	{
+		if (obj is RomanNumber roman) return Roman_to_10(this).CompareTo(Roman_to_10(roman));
+		else throw new ArgumentException("Некорректное значение параметра");
+	}
 
-    public int CompareTo(object? o)
-    {
-        if (o is RomanNumber number)
-        {
-            return number.Decimal_Number - Decimal_Number;
-        }
-        else throw new ArgumentException("Некорректное значение параметра!!");
-    }
+	public override string ToString()
+	{
+		return Roman;
+	}
 }

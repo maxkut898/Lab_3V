@@ -1,38 +1,37 @@
 ﻿using System;
 
+
+
 class Program
 {
-    static void Main()
-    {
-        RomanNumber a = new RomanNumber(1999);
-        RomanNumber b = new RomanNumber(648);
-        RomanNumber c = new RomanNumber(7);
-        RomanNumber d = new RomanNumber(49);
-
-        Console.WriteLine("A = 1999 = MCMXCIX: " + a.ToString());
-        Console.WriteLine("B = 648 = DCXLVIII: " + b.ToString());
-        Console.WriteLine("C = 7 = VII: " + c.ToString());
-        Console.WriteLine("D = 49 = XLIX: " + d.ToString());
-        Console.WriteLine("");
-
-        Console.WriteLine("B + C = 2006 = MMVI: " + RomanNumber.Add(b, c).ToString());
-        Console.WriteLine("B - C = 1992 = MCMXCII: " + RomanNumber.Sub(b, c).ToString());
-        Console.WriteLine("D * C = 343 = CCCXLIII: " + RomanNumber.Mul(d, c).ToString());
-        Console.WriteLine("D / C = 7 = VII: " + RomanNumber.Div(d, c).ToString());
-        Console.WriteLine("");
-
-        Console.WriteLine("Сортировка:");
-        RomanNumber[] numbers = { a, b, c, d };
-        Array.Sort(numbers);
-
-        foreach (RomanNumber number in numbers)
-        {
-            Console.WriteLine(number.ToString());
-        }
-        Console.WriteLine("");
-
-        Console.WriteLine("Копирование:");
-        var f = (RomanNumber)c.Clone();
-        Console.WriteLine(f.ToString());
-    }
+	public static void Main(string[] args)
+	{
+		RomanNumber r = new RomanNumber((ushort)3528), r1;
+		Console.WriteLine(r);
+		r = new RomanNumber((ushort)35);
+		r1 = new RomanNumber((ushort)14);
+		try
+		{
+			Console.WriteLine(r+r1);
+			Console.WriteLine(r-r1);
+			Console.WriteLine(r*r1);
+			Console.WriteLine(r/r1);
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e);
+		}
+		Random rnd = new Random(DateTime.Now.Millisecond);
+		RomanNumber[] R = new RomanNumber[10];
+		for (int i = 0; i < 10; i++)
+		{
+			R[i] = new RomanNumber((ushort)(2 + 2 * rnd.Next(20)));
+		}
+		Array.Sort(R);
+		for (int i = 0; i < 10; i++)
+		{
+			Console.WriteLine(R[i]);
+		}
+		Console.ReadLine();
+	}
 }
